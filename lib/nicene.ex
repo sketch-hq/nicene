@@ -1,18 +1,17 @@
 defmodule Nicene do
   @moduledoc """
-  Documentation for `Nicene`.
+  A Credo plugin which offers several additional checks.
   """
 
-  @doc """
-  Hello world.
+  alias Credo.Plugin
 
-  ## Examples
+  def init(exec) do
+    config_file =
+      :nicene
+      |> :code.priv_dir()
+      |> Path.join(".credo.exs")
+      |> File.read!()
 
-      iex> Nicene.hello()
-      :world
-
-  """
-  def hello do
-    :world
+    Plugin.register_default_config(exec, config_file)
   end
 end

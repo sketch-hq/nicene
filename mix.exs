@@ -1,28 +1,54 @@
 defmodule Nicene.MixProject do
   use Mix.Project
 
+  @github_url "https://github.com/sketch_hq/nicene"
+
   def project do
     [
       app: :nicene,
       version: "0.1.0",
-      elixir: "~> 1.10-dev",
-      start_permanent: Mix.env() == :prod,
-      deps: deps()
+      elixir: "~> 1.7",
+      elixirc_paths: elixirc_paths(Mix.env()),
+      start_permanent: false,
+      description: "A Credo plugin containing additional checks.",
+      deps: deps(),
+      package: package(),
+
+      # Docs
+      name: "Nicene",
+      docs: [
+        main: "Readme",
+        extras: ["README.md"],
+        source_url: @github_url
+      ]
     ]
   end
 
-  # Run "mix help compile.app" to learn about applications.
-  def application do
+  def application(), do: []
+
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
+
+  defp package() do
     [
-      extra_applications: [:logger]
+      files: [
+        "priv",
+        "lib",
+        "mix.exs",
+        "README.md",
+        "LICENSE"
+      ],
+      maintainers: ["Devon Estes"],
+      licenses: ["MIT"],
+      links: %{
+        "GitHub" => @github_url
+      }
     ]
   end
 
-  # Run "mix help deps" to learn about dependencies.
-  defp deps do
+  defp deps() do
     [
-      # {:dep_from_hexpm, "~> 0.3.0"},
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
+      {:credo, "~> 1.1.0", only: [:dev, :test], runtime: false}
     ]
   end
 end

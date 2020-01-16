@@ -52,6 +52,18 @@ defmodule Nicene.TrueFalseCaseStatements do
     [issue_for(issue_meta, line_no) | issues]
   end
 
+  defp check_clauses(
+         [
+           {:->, _, [[true], _]},
+           {:->, _, [[{_, _, nil}], _]},
+         ],
+         issue_meta,
+         line_no,
+         issues
+       ) do
+    [issue_for(issue_meta, line_no) | issues]
+  end
+
   defp check_clauses(_, _, _, issues) do
     issues
   end

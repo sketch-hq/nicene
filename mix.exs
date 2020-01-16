@@ -8,7 +8,6 @@ defmodule Nicene.MixProject do
       app: :nicene,
       version: "0.1.0",
       elixir: "~> 1.7",
-      elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: false,
       description: "A Credo plugin containing additional checks.",
       deps: deps(),
@@ -25,9 +24,6 @@ defmodule Nicene.MixProject do
   end
 
   def application(), do: []
-
-  defp elixirc_paths(:test), do: ["lib", "test/support"]
-  defp elixirc_paths(_), do: ["lib"]
 
   defp package() do
     [
@@ -48,7 +44,8 @@ defmodule Nicene.MixProject do
 
   defp deps() do
     [
-      {:credo, "~> 1.1.0", only: [:dev, :test], runtime: false}
+      {:assertions, "~> 0.15.0"},
+      {:credo, "~> 1.1.0"}
     ]
   end
 end

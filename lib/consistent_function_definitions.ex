@@ -9,6 +9,7 @@ defmodule Nicene.ConsistentFunctionDefinitions do
   @doc false
   def run(source_file, params \\ []) do
     issue_meta = IssueMeta.for(source_file, params)
+    Credo.SourceFile
 
     funs =
       source_file

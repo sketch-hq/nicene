@@ -15,13 +15,18 @@ defmodule Nicene.PublicFunctionsFirst do
         []
 
       functions ->
-        {_, last_public_function} =
-          Enum.max_by(functions, fn
-            {:def, line_no} -> line_no
-            _ -> 0
-          end)
+        functions
+        |> Enum.max_by(fn
+          {:def, line_no} -> line_no
+          _ -> 0
+        end)
+        |> case do
+          {:defp, _} ->
+            []
 
-        Enum.reduce(functions, [], &check_function(&1, &2, issue_meta, last_public_function))
+          {_, last_public_function} ->
+            Enum.reduce(functions, [], &check_function(&1, &2, issue_meta, last_public_function))
+        end
     end
   end
 

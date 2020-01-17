@@ -235,6 +235,25 @@ defmodule NiceneTest do
       |> SourceFile.parse("lib/app/file.ex")
       |> PublicFunctionsFirst.run([])
       |> assert_issues([])
+
+      ~S"""
+      defmodule Graphql.Types.Error do
+        use Absinthe.Schema.Notation
+
+        object :error do
+          field :code, :string do
+            resolve(fn parent, _, _ -> missing_code(parent) end)
+          end
+        end
+
+        defp missing_code(_) do
+          {:ok, "UNKNOWN"}
+        end
+      end
+      """
+      |> SourceFile.parse("lib/app/macro_file.ex")
+      |> PublicFunctionsFirst.run([])
+      |> assert_issues([])
     end
   end
 

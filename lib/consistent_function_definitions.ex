@@ -9,15 +9,11 @@ defmodule Nicene.ConsistentFunctionDefinitions do
   @doc false
   def run(source_file, params \\ []) do
     issue_meta = IssueMeta.for(source_file, params)
-    Credo.SourceFile
 
-    funs =
-      source_file
-      |> Credo.Code.prewalk(&get_funs/2)
-      |> Enum.reduce(%{}, fn {name, line_no}, acc -> Map.put(acc, line_no, name) end)
+    funs = Credo.Code.prewalk(source_file, &get_funs/2, %{})
 
     source_file
-    |> SourceFile.lines()
+    |> Credo.SourceFile.lines()
     |> Enum.reduce(%{}, &process_line(&1, &2, funs))
     |> Enum.map(fn {line_no, definitions} -> {line_no, Enum.reverse(definitions)} end)
     |> Enum.reduce([], &process_fun(&1, &2, issue_meta))
@@ -28,12 +24,12 @@ defmodule Nicene.ConsistentFunctionDefinitions do
          functions
        )
        when op in [:def, :defp] do
-    {ast, [{name, line_no} | functions]}
+    {ast, Map.put(functions, line_no, name)}
   end
 
   defp get_funs({op, _, [{name, [{:line, line_no} | _], _} | _]} = ast, functions)
        when op in [:def, :defp] do
-    {ast, [{name, line_no} | functions]}
+    {ast, Map.put(functions, line_no, name)}
   end
 
   defp get_funs(ast, functions) do

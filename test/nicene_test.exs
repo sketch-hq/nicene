@@ -121,7 +121,10 @@ defmodule NiceneTest do
       defmodule App.File do
         def test_2(), do: test_3()
 
-        def test(), do: test_2()
+        def test() do
+          IO.inspect("IN HERE")
+          test_2()
+        end
 
         def test_3(), do: :ok
       end
@@ -133,7 +136,7 @@ defmodule NiceneTest do
           category: :readability,
           check: FileTopToBottom,
           filename: "lib/app/file.ex",
-          line_no: 4,
+          line_no: 2,
           message: "Function is defined before it's called"
         }
       ])
@@ -142,11 +145,33 @@ defmodule NiceneTest do
     test "does not warn for correct ordering" do
       """
       defmodule App.File do
-        def test(), do: test_2()
+        def test() do
+          IO.inspect("IN HERE")
+          test_2()
+        end
 
         def test_2(), do: test_3()
 
         def test_3(), do: :ok
+      end
+      """
+      |> SourceFile.parse("lib/app/file.ex")
+      |> FileTopToBottom.run([])
+      |> assert_issues([])
+
+      """
+      defmodule App.File do
+        def recursive(%{do_it: true}) do
+          do_recursive()
+        end
+
+        def recursive(args) do
+          args
+          |> Map.put(:do_it, true)
+          |> recursive()
+        end
+
+        def do_recurisve(), do: :ok
       end
       """
       |> SourceFile.parse("lib/app/file.ex")

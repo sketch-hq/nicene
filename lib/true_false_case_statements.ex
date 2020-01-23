@@ -5,7 +5,7 @@ defmodule Nicene.TrueFalseCaseStatements do
 
   @explanation [check: @moduledoc]
 
-  use Credo.Check, base_priority: :high, category: :readability, exit_status: 1
+  use Credo.Check, base_priority: :high, category: :readability
 
   @doc false
   @spec run(Credo.SourceFile.t(), list()) :: list(Credo.Issue.t())

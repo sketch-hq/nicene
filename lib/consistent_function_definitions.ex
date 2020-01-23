@@ -4,7 +4,7 @@ defmodule Nicene.ConsistentFunctionDefinitions do
   """
   @explanation [check: @moduledoc]
 
-  use Credo.Check, base_priority: :high, category: :readability, exit_status: 1
+  use Credo.Check, base_priority: :high, category: :readability
 
   @doc false
   def run(source_file, params \\ []) do

@@ -6,7 +6,7 @@ defmodule Nicene.UnnecessaryPatternMatching do
 
   @explanation [check: @moduledoc]
 
-  use Credo.Check, base_priority: :high, category: :design, exit_status: 1
+  use Credo.Check, base_priority: :high, category: :design
 
   @doc false
   def run(source_file, params \\ []) do

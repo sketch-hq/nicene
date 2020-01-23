@@ -5,7 +5,7 @@ defmodule Nicene.FileAndModuleName do
 
   @explanation [check: @moduledoc]
 
-  use Credo.Check, base_priority: :high, category: :warning, exit_status: 1
+  use Credo.Check, base_priority: :high, category: :warning
 
   @doc false
   def run(source_file, params \\ []) do

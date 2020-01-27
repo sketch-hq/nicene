@@ -1,7 +1,7 @@
 defmodule Nicene.MixProject do
   use Mix.Project
 
-  @github_url "https://github.com/sketch_hq/nicene"
+  @github_url "https://github.com/sketch-hq/nicene"
 
   def project do
     [

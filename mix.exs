@@ -45,7 +45,8 @@ defmodule Nicene.MixProject do
   defp deps() do
     [
       {:assertions, "~> 0.15.0", only: [:test]},
-      {:credo, "~> 1.2.0-rc3"}
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
+      {:credo, "~> 1.2.0"}
     ]
   end
 end

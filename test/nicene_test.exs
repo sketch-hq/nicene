@@ -219,6 +219,27 @@ defmodule NiceneTest do
       |> FileTopToBottom.run([])
       |> assert_issues([])
     end
+
+    test "does not warn with variables matching function names" do
+      """
+      defmodule App.File do
+        def test() do
+          test_2()
+        end
+
+        def test_2(), do: test_3()
+
+        def test_3(), do: Sub.run(:ok)
+
+        def do_test(test) do
+          test
+        end
+      end
+      """
+      |> SourceFile.parse("lib/app/file.ex")
+      |> FileTopToBottom.run([])
+      |> assert_issues([])
+    end
   end
 
   describe "NoSpecsPrivateFunctions" do

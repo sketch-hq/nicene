@@ -82,6 +82,10 @@ defmodule Nicene.FileTopToBottom do
     end
   end
 
+  defp function_in_body({_, _,  nil}, line_nos, _) do
+    line_nos
+  end
+
   defp function_in_body({name, [{:line, line} | _], body}, line_nos, functions) do
     line_nos =
       Enum.reduce(functions, line_nos, fn
@@ -89,11 +93,7 @@ defmodule Nicene.FileTopToBottom do
         _, acc -> acc
       end)
 
-    if is_list(body) do
-      Enum.reduce(body, line_nos, &function_in_body(&1, &2, functions))
-    else
-      line_nos
-    end
+    Enum.reduce(body, line_nos, &function_in_body(&1, &2, functions))
   end
 
   defp function_in_body({:__block__, _, definitions}, line_nos, functions) do

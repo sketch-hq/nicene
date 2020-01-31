@@ -37,14 +37,18 @@ defmodule Nicene.ConsistentFunctionDefinitions do
   end
 
   defp process_line({line_no, line}, acc, funs) when :erlang.is_map_key(line_no, funs) do
-    def_type =
-      if Regex.match?(~r/defp? #{funs[line_no]}.*\),(\z)|( do: .*)/, line) do
-        :single_line
-      else
-        :multiline
-      end
+    if Regex.match?(~r/defp? #{funs[line_no]}.*\)$/, line) do
+      acc
+    else
+      def_type =
+        if Regex.match?(~r/defp? #{funs[line_no]}.*\),(\z)|( do: .*)/, line) do
+          :single_line
+        else
+          :multiline
+        end
 
-    Map.update(acc, funs[line_no], [{line_no, def_type}], &[{line_no, def_type} | &1])
+      Map.update(acc, funs[line_no], [{line_no, def_type}], &[{line_no, def_type} | &1])
+    end
   end
 
   defp process_line(_, acc, _) do

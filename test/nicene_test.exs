@@ -68,6 +68,26 @@ defmodule NiceneTest do
       |> SourceFile.parse("lib/app/file.ex")
       |> ConsistentFunctionDefinitions.run([])
       |> assert_issues([])
+
+      ~S"""
+      defmodule App.File do
+        def test(params \\ %{})
+        def test(%{}), do: :ok
+
+        def test(_), do: :err
+
+        def other_test(%{}) do
+          :ok
+        end
+
+        def other_test(_) do
+          :err
+        end
+      end
+      """
+      |> SourceFile.parse("lib/app/file.ex")
+      |> ConsistentFunctionDefinitions.run([])
+      |> assert_issues([])
     end
   end
 

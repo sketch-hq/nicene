@@ -625,6 +625,24 @@ defmodule NiceneTest do
       |> UnnecessaryPatternMatching.run([])
       |> assert_issues([])
     end
+
+    test "does not error" do
+      """
+        defmodule Sketchql.CreditUtils do
+          alias Sketchql.Credits.Credit
+
+          def gen_credit_amount do
+            min = Credit.const_min_amount() - 1
+            max = Credit.const_max_amount() - 1
+
+            Faker.random_between(min, max)
+          end
+        end
+      """
+      |> SourceFile.parse("test/app/file_test.ex")
+      |> UnnecessaryPatternMatching.run([])
+      |> assert_issues([])
+    end
   end
 
   defp assert_issues(issues, expected) do

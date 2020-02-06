@@ -28,7 +28,7 @@ defmodule Nicene.UnnecessaryPatternMatching do
   end
 
   defp get_funs({op, _, [{name, _, args} | _]} = ast, definitions) when op in [:def, :defp] do
-    {ast, [{name, length(args)} | definitions]}
+    {ast, [{name, arity(args)} | definitions]}
   end
 
   defp get_funs(ast, definitions) do
@@ -56,7 +56,7 @@ defmodule Nicene.UnnecessaryPatternMatching do
          issue_meta
        )
        when op in [:def, :defp] do
-    if {name, length(args)} in definitions and pattern_matching?(args) do
+    if {name, arity(args)} in definitions and pattern_matching?(args) do
       {ast, [issue_for(issue_meta, line_no) | issues]}
     else
       {ast, issues}
@@ -66,6 +66,9 @@ defmodule Nicene.UnnecessaryPatternMatching do
   defp traverse(ast, issues, _, _) do
     {ast, issues}
   end
+
+  defp arity(nil), do: 0
+  defp arity(args), do: length(args)
 
   defp pattern_matching?(ast) do
     Enum.any?(ast, fn

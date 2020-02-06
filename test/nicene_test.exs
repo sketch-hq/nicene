@@ -47,12 +47,63 @@ defmodule NiceneTest do
           message: "Inconsistent function definition found"
         }
       ])
+
+      """
+      defmodule App.File do
+        def test(arg) when is_map(arg), do: :ok
+
+        def test(_) do
+          :err
+        end
+
+        def test(other) do
+          :other
+        end
+      end
+      """
+      |> SourceFile.parse("lib/app/file.ex")
+      |> ConsistentFunctionDefinitions.run([])
+      |> assert_issues([
+        %Issue{
+          category: :readability,
+          check: ConsistentFunctionDefinitions,
+          filename: "lib/app/file.ex",
+          line_no: 4,
+          message: "Inconsistent function definition found"
+        },
+        %Issue{
+          category: :readability,
+          check: ConsistentFunctionDefinitions,
+          filename: "lib/app/file.ex",
+          line_no: 8,
+          message: "Inconsistent function definition found"
+        }
+      ])
     end
 
     test "doesn't have false positives" do
       """
       defmodule App.File do
         def test(%{}), do: :ok
+
+        def test(_), do: :err
+
+        def other_test(%{}) do
+          :ok
+        end
+
+        def other_test(_) do
+          :err
+        end
+      end
+      """
+      |> SourceFile.parse("lib/app/file.ex")
+      |> ConsistentFunctionDefinitions.run([])
+      |> assert_issues([])
+
+      """
+      defmodule App.File do
+        def test(arg) when is_map(arg), do: :ok
 
         def test(_), do: :err
 
@@ -327,6 +378,63 @@ defmodule NiceneTest do
       end
       """
       |> SourceFile.parse("lib/app/file.ex")
+      |> NoSpecsPrivateFunctions.run([])
+      |> assert_issues([])
+    end
+
+    test "does not accidentally warn with no spec" do
+      ~S"""
+        defmodule Mix.Tasks.Credo.Ci do
+          @moduledoc "\""
+          Runs Credo in CI with somewhat special behavior.
+
+          If the branch being tested is `master`, it runs Credo on all files but with the default
+          configuration, meaning that it won't fail with several of the checks that we're working
+          towards fixing across the codebase.
+
+          Otherwise, it only runs Credo on the files that have changed since the last merge commit,
+          and it will fail CI if any check doesn't pass for those specific files.
+          "\""
+
+          use Mix.Task
+
+          @shortdoc "Run Credo only on files that have changed since the last merge commit."
+
+          @impl true
+          def run(_) do
+            if System.cmd("git", ["rev-parse", "--abbrev-ref", "HEAD"]) == {"master", 0} do
+              Mix.Task.run("credo", [])
+            else
+              {last_merge, 0} =
+                System.cmd("git", [
+                  "log",
+                  "--pretty=format:%C(auto)%h",
+                  "--date-order",
+                  "--merges",
+                  "-1"
+                ])
+
+              {diff, 0} = System.cmd("git", ["diff", "--name-only", last_merge])
+
+              run_files(diff, "lib/", "new_files")
+              run_files(diff, "test/", "new_test_files")
+            end
+          end
+
+          defp run_files(diff, pattern, config_name) do
+            files =
+              diff
+              |> String.split("\n")
+              |> Enum.filter(&(&1 =~ pattern))
+              |> Enum.flat_map(&["--files-included", &1])
+
+            unless files == [] do
+              Mix.Task.run("credo", ["-C", config_name | files])
+            end
+          end
+        end
+      """
+      |> SourceFile.parse("lib/mix/tasks/credo.ci.ex")
       |> NoSpecsPrivateFunctions.run([])
       |> assert_issues([])
     end

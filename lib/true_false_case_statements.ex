@@ -55,7 +55,7 @@ defmodule Nicene.TrueFalseCaseStatements do
   defp check_clauses(
          [
            {:->, _, [[true], _]},
-           {:->, _, [[{_, _, nil}], _]},
+           {:->, _, [[{_, _, nil}], _]}
          ],
          issue_meta,
          line_no,

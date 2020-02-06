@@ -82,7 +82,7 @@ defmodule Nicene.FileTopToBottom do
     end
   end
 
-  defp function_in_body({_, _,  nil}, line_nos, _) do
+  defp function_in_body({_, _, nil}, line_nos, _) do
     line_nos
   end
 

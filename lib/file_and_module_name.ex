@@ -15,20 +15,17 @@ defmodule Nicene.FileAndModuleName do
   end
 
   defp process_line({line_no, line}, issues, issue_meta, source_file) do
-    # credo:disable-for-next-line
+    # credo:disable-for-next-line Nicene.FileAndModuleName
     case Regex.run(~r/\Adefmodule (.+) do/, line) do
       nil ->
         issues
 
       matches ->
         module_name = List.last(matches)
+        prefix = source_file.filename |> Path.split() |> hd()
+        suffix = Path.extname(source_file.filename)
 
-        expected_file_name =
-          ("Elixir." <> module_name)
-          |> String.to_atom()
-          |> Macro.underscore()
-
-        expected_file_name = "lib/" <> expected_file_name <> ".ex"
+        expected_file_name = prefix <> "/" <> Macro.underscore(module_name) <> suffix
 
         if expected_file_name == source_file.filename do
           issues

@@ -121,6 +121,24 @@ defmodule NiceneTest do
           message: "App.File is not definied in the correct file - should be lib/app/file.ex"
         }
       ])
+
+      """
+      defmodule App.FileTest do
+        def test(), do: :ok
+      end
+      """
+      |> SourceFile.parse("test/app/my/file_test.exs")
+      |> FileAndModuleName.run([])
+      |> assert_issues([
+        %Issue{
+          category: :warning,
+          check: FileAndModuleName,
+          filename: "test/app/my/file_test.exs",
+          line_no: 1,
+          message:
+            "App.FileTest is not definied in the correct file - should be test/app/file_test.exs"
+        }
+      ])
     end
 
     test "does not warn for correct names" do
@@ -130,6 +148,15 @@ defmodule NiceneTest do
       end
       """
       |> SourceFile.parse("lib/app/file.ex")
+      |> FileAndModuleName.run([])
+      |> assert_issues([])
+
+      """
+      defmodule App.FileTest do
+        def test(), do: :ok
+      end
+      """
+      |> SourceFile.parse("test/app/file_test.exs")
       |> FileAndModuleName.run([])
       |> assert_issues([])
     end

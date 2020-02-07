@@ -29,7 +29,7 @@ defmodule Nicene.Traverse do
       )
       when op in [:def, :defp] do
     if check_fun.(op, name, arity(args), line_no, args) do
-      {ast, [issue_fun.(line_no) | issues]}
+      {ast, [issue_fun.(line_no, name) | issues]}
     else
       {ast, issues}
     end
@@ -43,7 +43,7 @@ defmodule Nicene.Traverse do
       )
       when op in [:def, :defp] do
     if check_fun.(op, name, arity(args), line_no, args) do
-      {ast, [issue_fun.(line_no) | issues]}
+      {ast, [issue_fun.(line_no, name) | issues]}
     else
       {ast, issues}
     end
@@ -65,13 +65,15 @@ defmodule Nicene.Traverse do
   end
 
   def traverse_private(
-        {:defp, meta, [{name, _, args} | _]} = ast,
+        {:defp = op, meta, [{name, _, args} | _]} = ast,
         issues,
         check_fun,
         issue_fun
       ) do
-    if check_fun.(name, arity(args)) do
-      {ast, [issue_fun.(meta[:line], name) | issues]}
+    line_no = Keyword.get(meta, :line)
+
+    if check_fun.(op, name, arity(args), line_no, args) do
+      {ast, [issue_fun.(line_no, name) | issues]}
     else
       {ast, issues}
     end

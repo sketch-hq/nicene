@@ -22,7 +22,7 @@ defmodule Nicene.UnnecessaryPatternMatching do
       |> Enum.filter(fn {{_, arity}, count} -> count == 1 and arity != 0 end)
       |> Enum.map(&elem(&1, 0))
 
-    issue_fun = &issue_for(issue_meta, &1)
+    issue_fun = fn line_no, name -> issue_for(issue_meta, line_no, name) end
 
     check_fun = fn _, name, arity, _, args ->
       {name, arity} in single_definitions and pattern_matching?(args)
@@ -38,10 +38,11 @@ defmodule Nicene.UnnecessaryPatternMatching do
     end)
   end
 
-  defp issue_for(issue_meta, line_no) do
+  defp issue_for(issue_meta, line_no, name) do
     format_issue(issue_meta,
       message: "Unnecessary pattern matching or guard clause detected",
-      line_no: line_no
+      line_no: line_no,
+      trigger: name
     )
   end
 end

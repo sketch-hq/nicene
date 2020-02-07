@@ -14,7 +14,7 @@ defmodule Nicene.NoSpecsPrivateFunctions do
     specs = Credo.Code.prewalk(source_file, &Traverse.find_specs/2)
 
     issue_fun = &issue_for(issue_meta, &1, &2)
-    check_fun = &({&1, &2} in specs)
+    check_fun = fn _, name, arity, _, _ -> {name, arity} in specs end
     Credo.Code.prewalk(source_file, &Traverse.traverse_private(&1, &2, check_fun, issue_fun))
   end
 

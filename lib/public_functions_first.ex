@@ -10,20 +10,29 @@ defmodule Nicene.PublicFunctionsFirst do
 
   @doc false
   def run(source_file, params \\ []) do
-    issue_meta = IssueMeta.for(source_file, params)
-    functions = Credo.Code.prewalk(source_file, &Traverse.get_funs/2)
-
-    functions
-    |> Enum.max_by(fn
-      {:def, _, _, line_no} -> line_no
-      _ -> 0
-    end)
-    |> case do
-      {:defp, _, _, _} ->
+    case Credo.Code.prewalk(source_file, &Traverse.get_funs/2) do
+      [] ->
         []
 
-      {_, _, _, last_public_function} ->
-        Enum.reduce(functions, [], &check_function(&1, &2, issue_meta, last_public_function))
+      functions ->
+        issue_meta = IssueMeta.for(source_file, params)
+
+        functions
+        |> Enum.max_by(fn
+          {:def, _, _, line_no} -> line_no
+          _ -> 0
+        end)
+        |> case do
+          {:defp, _, _, _} ->
+            []
+
+          {_, _, _, last_public_function} ->
+            Enum.reduce(
+              functions,
+              [],
+              &check_function(&1, &2, issue_meta, last_public_function)
+            )
+        end
     end
   end
 

@@ -497,6 +497,21 @@ defmodule NiceneTest do
       |> PublicFunctionsFirst.run([])
       |> assert_issues([])
     end
+
+    test "does not raise an exception with no function calls" do
+      """
+      defmodule App.File do
+        use Ecto.Schema
+
+        schema("users") do
+          field(:name, :string)
+        end
+      end
+      """
+      |> SourceFile.parse("lib/app/file.ex")
+      |> PublicFunctionsFirst.run([])
+      |> assert_issues([])
+    end
   end
 
   describe "TestsInTestFolder" do

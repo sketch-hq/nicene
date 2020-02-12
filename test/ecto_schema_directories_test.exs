@@ -41,11 +41,10 @@ defmodule Nicene.EctoSchemaDirectoriesTest do
     |> EctoSchemaDirectories.run([], other_files)
     |> assert_issues([
       %Issue{
-        category: :warning,
+        category: :refactoring,
         check: EctoSchemaDirectories,
-        filename: "lib/app/my/file.ex",
-        line_no: 1,
-        message: "My.Schema is in a directory with files that are not Ecto schemas"
+        filename: "lib/my/user.ex",
+        message: "lib/my/user.ex is in a directory with files that are not Ecto schemas"
       }
     ])
   end

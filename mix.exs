@@ -6,7 +6,7 @@ defmodule Nicene.MixProject do
   def project do
     [
       app: :nicene,
-      version: "0.1.7",
+      version: "0.2.0",
       elixir: "~> 1.7",
       start_permanent: false,
       description: "A Credo plugin containing additional checks.",

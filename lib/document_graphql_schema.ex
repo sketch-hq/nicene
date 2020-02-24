@@ -57,7 +57,8 @@ defmodule Nicene.DocumentGraphqlSchema do
                  {unquote(fun), meta, [_, args, [do: {:__block__, _, body}]]} = ast,
                  issues,
                  issue_meta
-               ) do
+               )
+               when is_list(args) do
             if List.keymember?(body, :description, 0) or Keyword.has_key?(args, :description) do
               {ast, issues}
             else
@@ -69,8 +70,21 @@ defmodule Nicene.DocumentGraphqlSchema do
                  {unquote(fun), meta, [_, _, args, [do: {:__block__, _, body}]]} = ast,
                  issues,
                  issue_meta
-               ) do
+               )
+               when is_list(args) do
             if List.keymember?(body, :description, 0) or Keyword.has_key?(args, :description) do
+              {ast, issues}
+            else
+              {ast, [issue_for(issue_meta, meta[:line]) | issues]}
+            end
+          end
+
+          defp check_schema_parts(
+                 {unquote(fun), meta, [_, _, _, [do: {:__block__, _, body}]]} = ast,
+                 issues,
+                 issue_meta
+               ) do
+            if List.keymember?(body, :description, 0) do
               {ast, issues}
             else
               {ast, [issue_for(issue_meta, meta[:line]) | issues]}
@@ -89,8 +103,21 @@ defmodule Nicene.DocumentGraphqlSchema do
                  {unquote(fun), meta, [_, args, [do: {_, _, body}]]} = ast,
                  issues,
                  issue_meta
-               ) do
+               )
+               when is_list(args) do
             if List.keymember?(body, :description, 0) or Keyword.has_key?(args, :description) do
+              {ast, issues}
+            else
+              {ast, [issue_for(issue_meta, meta[:line]) | issues]}
+            end
+          end
+
+          defp check_schema_parts(
+                 {unquote(fun), meta, [_, _, [do: {_, _, body}]]} = ast,
+                 issues,
+                 issue_meta
+               ) do
+            if List.keymember?(body, :description, 0) do
               {ast, issues}
             else
               {ast, [issue_for(issue_meta, meta[:line]) | issues]}

@@ -25,14 +25,9 @@ defmodule Nicene.EctoSchemaDirectories do
   end
 
   defp other_files(filename) do
-    case File.ls("#{Path.dirname(filename)}/*.ex") do
-      {:ok, files} ->
-        read_files(files)
-
-      {:error, error} ->
-        Logger.warn("Unable to get files in same directory - error: #{inspect(error)}")
-        []
-    end
+    "#{Path.dirname(filename)}/*.ex"
+    |> Path.wildcard()
+    |> read_files()
   end
 
   defp read_files(files) do

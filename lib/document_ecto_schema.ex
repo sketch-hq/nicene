@@ -44,12 +44,27 @@ defmodule Nicene.DocumentEctoSchema do
     end
   end
 
-  defp get_schema_info(
-         {:has_many, meta, [field, _]} = ast,
-         {descriptions, valid_description, fields}
-       ) do
-    {ast, {descriptions, valid_description, [message_for(field, meta[:line]) | fields]}}
-  end
+  defs =
+    Enum.map(
+      [
+        :belongs_to,
+        :has_one,
+        :has_many,
+        :many_to_many
+      ],
+      fn assoc ->
+        quote do
+          defp get_schema_info(
+                 {unquote(assoc), meta, [field | _]} = ast,
+                 {descriptions, valid_description, fields}
+               ) do
+            {ast, {descriptions, valid_description, [message_for(field, meta[:line]) | fields]}}
+          end
+        end
+      end
+    )
+
+  Module.eval_quoted(__MODULE__, defs)
 
   defp get_schema_info(ast, accumulator) do
     {ast, accumulator}

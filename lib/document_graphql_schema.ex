@@ -9,10 +9,26 @@ defmodule Nicene.DocumentGraphqlSchema do
   @doc false
   def run(source_file, params \\ []) do
     issue_meta = IssueMeta.for(source_file, params)
-    Credo.Code.prewalk(source_file, &check_schema_parts(&1, &2, issue_meta))
+    Credo.Code.prewalk(source_file, &find_graphql_schemas(&1, &2, issue_meta))
   end
 
-  defs =
+  find_schemas =
+    Enum.map([:scalar, :object, :input_object, :directive, :interface, :union, :enum], fn fun ->
+      quote do
+        defp find_graphql_schemas({unquote(fun), meta, _} = ast, issues, issue_meta) do
+          {_, issues} = Macro.prewalk(ast, issues, &check_schema_parts(&1, &2, issue_meta))
+          {{unquote(fun), meta, []}, issues}
+        end
+      end
+    end)
+
+  Module.eval_quoted(__MODULE__, find_schemas)
+
+  defp find_graphql_schemas(ast, issues, _) do
+    {ast, issues}
+  end
+
+  schema_parts =
     Enum.map(
       [
         :field,
@@ -135,7 +151,7 @@ defmodule Nicene.DocumentGraphqlSchema do
       end
     )
 
-  Module.eval_quoted(__MODULE__, defs)
+  Module.eval_quoted(__MODULE__, schema_parts)
 
   defp check_schema_parts(ast, issues, _) do
     {ast, issues}

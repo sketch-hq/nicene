@@ -160,6 +160,26 @@ defmodule Nicene.DocumentGraphqlSchemaTest do
     |> assert_issues(expected_issues)
   end
 
+  test "does not warn for Ecto schemas (which also use `field`)" do
+    ~S'''
+    defmodule App.Users.User do
+      use Ecto.Schema
+
+      @type t :: %__MODULE__{}
+
+      schema "users" do
+        field(:identifier, :string)
+        field(:name, :string)
+        field(:percentage, :integer, default: 0)
+        timestamps(inserted_at: :createdAt, updated_at: :updatedAt)
+      end
+    end
+    '''
+    |> SourceFile.parse("lib/app/users/user.ex")
+    |> DocumentGraphqlSchema.run([])
+    |> assert_issues([])
+  end
+
   defp assert_issues(issues, expected) do
     assert_lists_equal(issues, expected, fn issue, expected ->
       assert_structs_equal(issue, expected, [:category, :check, :filename, :line_no, :message])

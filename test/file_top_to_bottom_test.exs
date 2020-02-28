@@ -109,6 +109,49 @@ defmodule Nicene.FileTopToBottomTest do
     |> assert_issues([])
   end
 
+  test "does not warn for non-nested modules that happen to have the same name" do
+    ~S"""
+    defimpl String.Chars, for: App.File do
+      def to_string(file) do
+        "#{file.name}"
+      end
+    end
+
+    defmodule App.File do
+      def test() do
+        to_string("in_here")
+        test_2()
+      end
+
+      def test_2(), do: test_3()
+
+      def test_3(), do: :ok
+    end
+    """
+    |> SourceFile.parse("lib/app/file.ex")
+    |> FileTopToBottom.run([])
+    |> assert_issues([])
+
+    """
+    defmodule App.File do
+      def recursive(%{do_it: true}) do
+        do_recursive()
+      end
+
+      def recursive(args) do
+        args
+        |> Map.put(:do_it, true)
+        |> recursive()
+      end
+
+      def do_recurisve(), do: :ok
+    end
+    """
+    |> SourceFile.parse("lib/app/file.ex")
+    |> FileTopToBottom.run([])
+    |> assert_issues([])
+  end
+
   test "does not warn with variables matching function names" do
     """
     defmodule App.File do

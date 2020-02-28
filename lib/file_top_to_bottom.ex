@@ -10,7 +10,27 @@ defmodule Nicene.FileTopToBottom do
   def run(source_file, params \\ []) do
     issue_meta = IssueMeta.for(source_file, params)
     functions = Credo.Code.prewalk(source_file, &get_funs/2, %{})
-    Credo.Code.prewalk(source_file, &process_lines(&1, &2, functions, issue_meta))
+
+    source_file
+    |> Credo.Code.prewalk(&process_lines(&1, &2, functions, issue_meta))
+    |> List.flatten()
+  end
+
+  defp get_funs({:defmodule, _, body}, functions) do
+    [{:__aliases__, _, name} | _] = body
+    {_, funs_for_module} = Macro.prewalk(body, %{}, &get_funs/2)
+    {{:defmodule, [], []}, Map.put(functions, name, funs_for_module)}
+  end
+
+  defp get_funs({:defimpl, _, body}, functions) do
+    [
+      {:__aliases__, _, impl},
+      [for: {:__aliases__, _, name}]
+      | _
+    ] = body
+
+    {_, funs_for_module} = Macro.prewalk(body, %{}, &get_funs/2)
+    {{:defmodule, [], []}, Map.put(functions, impl ++ name, funs_for_module)}
   end
 
   defp get_funs(
@@ -28,6 +48,30 @@ defmodule Nicene.FileTopToBottom do
 
   defp get_funs(ast, functions) do
     {ast, functions}
+  end
+
+  defp process_lines({:defmodule, _, body}, issues, functions, issue_meta) do
+    [{:__aliases__, _, name} | _] = body
+
+    {_, issues_for_module} =
+      Macro.prewalk(body, issues, &process_lines(&1, &2, Map.get(functions, name), issue_meta))
+
+    {{:defmodule, [], []}, [issues_for_module | issues]}
+  end
+
+  defp process_lines({:defimpl, _, body}, issues, functions, issue_meta) do
+    [
+      {:__aliases__, _, impl},
+      [for: {:__aliases__, _, name}]
+      | _
+    ] = body
+
+    name = impl ++ name
+
+    {_, issues_for_module} =
+      Macro.prewalk(body, issues, &process_lines(&1, &2, Map.get(functions, name), issue_meta))
+
+    {{:defmodule, [], []}, [issues_for_module | issues]}
   end
 
   defp process_lines(

@@ -173,6 +173,30 @@ defmodule Nicene.FileTopToBottomTest do
     |> assert_issues([])
   end
 
+  test "does not error randomly" do
+    ~S"""
+    defimpl String.Chars, for: [App.File, App.MyFile] do
+      def to_string(file) do
+        "#{file.name}"
+      end
+    end
+
+    defmodule App.File do
+      def test() do
+        to_string("in_here")
+        test_2()
+      end
+
+      def test_2(), do: test_3()
+
+      def test_3(), do: :ok
+    end
+    """
+    |> SourceFile.parse("lib/app/file.ex")
+    |> FileTopToBottom.run([])
+    |> assert_issues([])
+  end
+
   defp assert_issues(issues, expected) do
     assert_lists_equal(issues, expected, fn issue, expected ->
       assert_structs_equal(issue, expected, [:category, :check, :filename, :line_no, :message])

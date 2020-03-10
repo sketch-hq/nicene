@@ -22,15 +22,23 @@ defmodule Nicene.FileTopToBottom do
     {{:defmodule, [], []}, Map.put(functions, name, funs_for_module)}
   end
 
-  defp get_funs({:defimpl, _, body}, functions) do
-    [
-      {:__aliases__, _, impl},
-      [for: {:__aliases__, _, name}]
-      | _
-    ] = body
-
+  defp get_funs(
+         {:defimpl, _, [{:__aliases__, _, impl}, [for: {:__aliases__, _, name}] | _] = body},
+         functions
+       ) do
     {_, funs_for_module} = Macro.prewalk(body, %{}, &get_funs/2)
     {{:defmodule, [], []}, Map.put(functions, impl ++ name, funs_for_module)}
+  end
+
+  defp get_funs({:defimpl, _, [{:__aliases__, _, impl}, [for: names] | _] = body}, functions) do
+    {_, funs_for_module} = Macro.prewalk(body, %{}, &get_funs/2)
+
+    funs =
+      Enum.reduce(names, functions, fn {_, _, name}, acc ->
+        Map.put(acc, impl ++ name, funs_for_module)
+      end)
+
+    {{:defmodule, [], []}, funs}
   end
 
   defp get_funs(
@@ -59,19 +67,39 @@ defmodule Nicene.FileTopToBottom do
     {{:defmodule, [], []}, [issues_for_module | issues]}
   end
 
-  defp process_lines({:defimpl, _, body}, issues, functions, issue_meta) do
-    [
-      {:__aliases__, _, impl},
-      [for: {:__aliases__, _, name}]
-      | _
-    ] = body
-
+  defp process_lines(
+         {:defimpl, _, [{:__aliases__, _, impl}, [for: {:__aliases__, _, name}] | _] = body},
+         issues,
+         functions,
+         issue_meta
+       ) do
     name = impl ++ name
 
     {_, issues_for_module} =
       Macro.prewalk(body, issues, &process_lines(&1, &2, Map.get(functions, name), issue_meta))
 
     {{:defmodule, [], []}, [issues_for_module | issues]}
+  end
+
+  defp process_lines(
+         {:defimpl, _, [{:__aliases__, _, impl}, [for: names] | _] = body},
+         issues,
+         functions,
+         issue_meta
+       ) do
+    issues =
+      Enum.reduce(names, issues, fn {_, _, name}, acc ->
+        {_, issues_for_module} =
+          Macro.prewalk(
+            body,
+            acc,
+            &process_lines(&1, &2, Map.get(functions, impl ++ name), issue_meta)
+          )
+
+        issues_for_module
+      end)
+
+    {{:defmodule, [], []}, issues}
   end
 
   defp process_lines(

@@ -15,6 +15,10 @@ defmodule Nicene.Traverse do
     {ast, [{op, name, arity(args), line_no} | definitions]}
   end
 
+  def get_funs({:quote, meta, _}, definitions) do
+    {{:quote, meta, []}, definitions}
+  end
+
   def get_funs(ast, definitions) do
     {ast, definitions}
   end

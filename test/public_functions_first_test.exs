@@ -60,6 +60,23 @@ defmodule Nicene.PublicFunctionsFirstTest do
     |> SourceFile.parse("lib/app/macro_file.ex")
     |> PublicFunctionsFirst.run([])
     |> assert_issues([])
+
+    """
+    defmodule App.File do
+      def test(), do: test_2()
+
+      defp test_2() do
+        quote do
+          def test_4(), do: unquote(test_3())
+        end
+      end
+
+      defp test_3(), do: :ok
+    end
+    """
+    |> SourceFile.parse("lib/app/file.ex")
+    |> PublicFunctionsFirst.run([])
+    |> assert_issues([])
   end
 
   test "does not raise an exception with no function calls" do

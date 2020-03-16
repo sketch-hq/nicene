@@ -30,6 +30,10 @@ defmodule Nicene.FileTopToBottom do
     {{:defmodule, [], []}, Map.put(functions, impl ++ name, funs_for_module)}
   end
 
+  defp get_funs({:defimpl, _, [{:__aliases__, _, _}, [for: {_, _, _}] | _]}, funs) do
+    {{:defimpl, [], []}, funs}
+  end
+
   defp get_funs({:defimpl, _, [{:__aliases__, _, impl}, [for: names] | _] = body}, functions) do
     {_, funs_for_module} = Macro.prewalk(body, %{}, &get_funs/2)
 
@@ -79,6 +83,10 @@ defmodule Nicene.FileTopToBottom do
       Macro.prewalk(body, issues, &process_lines(&1, &2, Map.get(functions, name), issue_meta))
 
     {{:defmodule, [], []}, [issues_for_module | issues]}
+  end
+
+  defp process_lines({:defimpl, _, [{:__aliases__, _, _}, [for: {_, _, _}] | _]}, issues, _, _) do
+    {{:defmodule, [], []}, issues}
   end
 
   defp process_lines(

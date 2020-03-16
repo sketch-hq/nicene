@@ -187,6 +187,10 @@ defmodule Nicene.FileTopToBottomTest do
         test_2()
       end
 
+      defimpl Jason.Encoder, for: __MODULE__ do
+        def encode(a, b), do: a
+      end
+
       def test_2(), do: test_3()
 
       def test_3(), do: :ok

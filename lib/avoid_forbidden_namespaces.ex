@@ -18,11 +18,7 @@ defmodule Nicene.AvoidForbiddenNamespaces do
     forbidden_namespaces =
       params
       |> Keyword.get(:forbid)
-      |> Enum.map(fn module ->
-        [_, namespace] = module |> Atom.to_string() |> String.split(".")
-
-        namespace |> String.to_atom()
-      end)
+      |> Enum.map(&get_namespace/1)
 
     source_file
     |> Credo.Code.prewalk(
@@ -60,19 +56,17 @@ defmodule Nicene.AvoidForbiddenNamespaces do
   end
 
   defp get_namespace(module_name) when is_atom(module_name) do
-    [_ | [namespace | _]] =
-      module_name
-      |> Atom.to_string()
-      |> String.split(".")
-
-    namespace |> String.to_atom()
-  end
-
-  defp get_namespace(module_name) do
     module_name
-    |> String.split(".")
+    |> Module.split()
     |> hd()
     |> String.to_atom()
+  end
+
+  defp get_namespace(module_name) when is_binary(module_name) do
+    module_name
+    |> List.wrap()
+    |> Module.concat()
+    |> get_namespace()
   end
 
   defp issue_for(issue_meta, line_no, trigger) do

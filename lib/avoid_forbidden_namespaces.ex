@@ -36,18 +36,17 @@ defmodule Nicene.AvoidForbiddenNamespaces do
 
   defp check_usage(
          {:__aliases__, meta, [used_namespace | _]} = ast,
-         {issues, current_namespace},
-         from_namespace,
+         {issues, namespace},
+         namespace,
          forbidden_namespaces,
          issue_meta
-       )
-       when current_namespace == from_namespace do
+       ) do
     if used_namespace in forbidden_namespaces do
       {ast,
        {[issue_for(issue_meta, Keyword.get(meta, :line), used_namespace) | issues],
-        current_namespace}}
+        namespace}}
     else
-      {ast, {issues, current_namespace}}
+      {ast, {issues, namespace}}
     end
   end
 

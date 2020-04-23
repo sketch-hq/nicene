@@ -22,7 +22,7 @@ defmodule Nicene.AvoidImportsFromCurrentApplicationTest do
     end
     """
     |> SourceFile.parse("lib/app/file.ex")
-    |> AvoidImportsFromCurrentApplication.run([namespaces: [App, AppWeb]])
+    |> AvoidImportsFromCurrentApplication.run(namespaces: [App, AppWeb])
     |> assert_issues([
       %Issue{
         category: :refactoring,
@@ -58,7 +58,7 @@ defmodule Nicene.AvoidImportsFromCurrentApplicationTest do
     end
     """
     |> SourceFile.parse("lib/app/file.ex")
-    |> AvoidImportsFromCurrentApplication.run([namespaces: [Apple, AppleWeb]])
+    |> AvoidImportsFromCurrentApplication.run(namespaces: [Apple, AppleWeb])
     |> assert_issues([])
   end
 

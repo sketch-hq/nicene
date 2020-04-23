@@ -13,11 +13,11 @@ defmodule Nicene.AvoidForbiddenNamespaces do
   def run(source_file, params \\ []) do
     issue_meta = IssueMeta.for(source_file, params)
 
-    from_namespace = params |> Keyword.get(:from) |> get_namespace()
+    from_namespace = params |> Keyword.fetch!(:from) |> get_namespace()
 
     forbidden_namespaces =
       params
-      |> Keyword.get(:forbid)
+      |> Keyword.fetch!(:forbid)
       |> Enum.map(&get_namespace/1)
 
     source_file

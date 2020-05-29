@@ -1,7 +1,8 @@
 defmodule Nicene.DocumentGraphqlSchemaTest do
   use Assertions.Case
+  import Nicene.ExpectIssues
 
-  alias Credo.{Issue, SourceFile}
+  alias Credo.SourceFile
 
   alias Nicene.DocumentGraphqlSchema
 
@@ -83,28 +84,16 @@ defmodule Nicene.DocumentGraphqlSchemaTest do
   end
 
   test "warns if documentation is missing or if documented with `@desc` attribute" do
-    line_numbers = [3, 8, 9, 21, 22, 25, 26, 30, 38, 39, 40, 43, 44, 47, 48, 51]
-
-    expected_issues =
-      Enum.map(line_numbers, fn line_no ->
-        %Issue{
-          category: :readability,
-          check: Nicene.DocumentGraphqlSchema,
-          filename: "lib/app/types/user.ex",
-          line_no: line_no,
-          message:
-            "All fields and objects should be documented with the `description` macro or option."
-        }
-      end)
-
     ~S'''
     defmodule App.Types.User do
       @desc "A scalar time type"
+      # credo:expect-next-line
       scalar :time do
         parse &Timex.parse(&1.value, "{ISOz}")
         serialize &Timex.format!(&1, "{ISOz}")
       end
 
+      # credo:expect-next-lines:2
       directive :mydirective do
         arg :if, non_null(:boolean)
 
@@ -118,15 +107,18 @@ defmodule Nicene.DocumentGraphqlSchemaTest do
         end
       end
 
+      # credo:expect-next-lines:2
       interface :vehicle do
         field :wheel_count, :integer
       end
 
+      # credo:expect-next-lines:2
       object :rally_car do
         field :wheel_count, :integer
         interface :vehicle
       end
 
+      # credo:expect-next-line
       union :search_result do
         types [:person, :business]
         resolve_type fn
@@ -135,19 +127,23 @@ defmodule Nicene.DocumentGraphqlSchemaTest do
         end
       end
 
+      # credo:expect-next-lines:3
       enum :share_filter_type do
         value(:all, as: "all")
         value(:own, as: "own")
       end
 
+      # credo:expect-next-lines:2
       input_object :share_search_input do
         field(:args, :arg_type, default_value: "own")
       end
 
+      # credo:expect-next-lines:2
       object :user do
         field(:identifier, :string, name: "id")
 
         @desc "A number of wheels on a car"
+        # credo:expect-next-line
         field :projects, non_null(:projects), default: [] do
           pagination_args()
           resolve(&ProjectResolver.list_projects/3)
@@ -156,8 +152,7 @@ defmodule Nicene.DocumentGraphqlSchemaTest do
     end
     '''
     |> SourceFile.parse("lib/app/types/user.ex")
-    |> DocumentGraphqlSchema.run([])
-    |> assert_issues(expected_issues)
+    |> assert_expected_issues(DocumentGraphqlSchema, 16)
   end
 
   test "does not warn for Ecto schemas (which also use `field`)" do
@@ -178,11 +173,5 @@ defmodule Nicene.DocumentGraphqlSchemaTest do
     |> SourceFile.parse("lib/app/users/user.ex")
     |> DocumentGraphqlSchema.run([])
     |> assert_issues([])
-  end
-
-  defp assert_issues(issues, expected) do
-    assert_lists_equal(issues, expected, fn issue, expected ->
-      assert_structs_equal(issue, expected, [:category, :check, :filename, :line_no, :message])
-    end)
   end
 end

@@ -50,12 +50,10 @@ defmodule Nicene.ExpectIssues do
 
   def assert_issues(issues, expected) do
     assert_lists_equal(issues, expected, fn issue, expected ->
-      assert_structs_equal(issue, expected, [:category, :check, :filename, :line_no])
-      if match?(%Regex{}, expected.message) do
+      if expected.message do
         assert Regex.match?(expected.message, issue.message)
-      else
-        true
       end
+      assert_structs_equal(issue, expected, [:category, :check, :filename, :line_no])
     end)
   end
 end

@@ -24,14 +24,14 @@ defmodule Nicene.FileAndModuleNameTest do
         filename: "lib/app/my/file.ex",
         line_no: 5,
         message:
-          "Other.Module is not definied in the correct file - should be lib/other/module.ex"
+          "Other.Module is not defined in the correct file - should be lib/other/module.ex"
       },
       %Credo.Issue{
         category: :warning,
         check: FileAndModuleName,
         filename: "lib/app/my/file.ex",
         line_no: 1,
-        message: "App.File is not definied in the correct file - should be lib/app/file.ex"
+        message: "App.File is not defined in the correct file - should be lib/app/file.ex"
       }
     ])
 
@@ -49,7 +49,7 @@ defmodule Nicene.FileAndModuleNameTest do
         filename: "test/app/my/file_test.exs",
         line_no: 1,
         message:
-          "App.FileTest is not definied in the correct file - should be test/app/file_test.exs"
+          "App.FileTest is not defined in the correct file - should be test/app/file_test.exs"
       }
     ])
   end

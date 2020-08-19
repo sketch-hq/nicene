@@ -31,6 +31,42 @@ defmodule Nicene.FileTopToBottomTest do
     ])
   end
 
+  test "warns with files that don't read top to bottom with macros" do
+    """
+    defmodule App.File.Macro do
+      defmacro __using__(_) do
+        quote do
+          defmodule Module.safe_concat(__MODULE__, Test) do
+            def test_2(), do: test_3()
+
+            def test() do
+              IO.inspect("IN HERE")
+              test_2()
+            end
+
+            def test_2(), do: :ok
+          end
+        end
+      end
+    end
+
+    defmodule App.File do
+      use App.File.Macro
+    end
+    """
+    |> SourceFile.parse("lib/app/file.ex")
+    |> FileTopToBottom.run([])
+    |> assert_issues([
+      %Issue{
+        category: :readability,
+        check: FileTopToBottom,
+        filename: "lib/app/file.ex",
+        line_no: 2,
+        message: "Function is defined before it's called"
+      }
+    ])
+  end
+
   test "does not warn for correct ordering" do
     """
     defmodule App.File do

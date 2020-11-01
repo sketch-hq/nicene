@@ -3,24 +3,12 @@ defmodule Nicene.Traverse do
   # Functions to help us traverse ASTs for common patterns
 
   @doc false
-  @spec get_funs(Macro.t(), list()) :: {Macro.t(), list()}
-  def get_funs({op, _, [{:when, meta, [{name, _, args} | _]} | _]} = ast, definitions)
-      when op in [:def, :defp] do
-    line_no = Keyword.get(meta, :line)
-    {ast, [{op, name, arity(args), line_no} | definitions]}
-  end
-
-  def get_funs({op, _, [{name, meta, args} | _]} = ast, definitions) when op in [:def, :defp] do
-    line_no = Keyword.get(meta, :line)
-    {ast, [{op, name, arity(args), line_no} | definitions]}
-  end
-
-  def get_funs({:quote, meta, _}, definitions) do
-    {{:quote, meta, []}, definitions}
-  end
-
-  def get_funs(ast, definitions) do
-    {ast, definitions}
+  # returns list of {:def | :defp, M, F, A, line_no}
+  @spec get_funs(Macro.t()) :: list()
+  def get_funs(ast) do
+    ast
+    |> Credo.Code.prewalk(&get_funs/2, {[], []})
+    |> elem(0)
   end
 
   @doc false
@@ -114,6 +102,42 @@ defmodule Nicene.Traverse do
 
   def find_specs(ast, issues) do
     {ast, issues}
+  end
+
+  defp get_funs({:defmodule, _, body}, {functions, modules}) do
+    [{:__aliases__, _, name} | _] = body
+
+    {_, {updated_functions, _}} =
+      Macro.prewalk(body, {functions, add_module(name, modules)}, &get_funs/2)
+
+    {{:defmodule, [], []}, {updated_functions, modules}}
+  end
+
+  defp get_funs({op, _, [{:when, meta, [{name, _, args} | _]} | _]} = ast, {definitions, modules})
+      when op in [:def, :defp] do
+    line_no = Keyword.get(meta, :line)
+    {ast, {[{op, hd(modules), name, arity(args), line_no} | definitions], modules}}
+  end
+
+  defp get_funs({op, _, [{name, meta, args} | _]} = ast, {definitions, modules}) when op in [:def, :defp] do
+    line_no = Keyword.get(meta, :line)
+    {ast, {[{op, hd(modules), name, arity(args), line_no} | definitions], modules}}
+  end
+
+  defp get_funs({:quote, meta, _}, acc) do
+    {{:quote, meta, []}, acc}
+  end
+
+  defp get_funs(ast, acc) do
+    {ast, acc}
+  end
+
+  defp add_module(name, []) do
+    name
+  end
+
+  defp add_module(name, [last_module | _] = modules) do
+    [List.wrap(last_module) ++ List.wrap(name) | modules]
   end
 
   defp arity(nil), do: 0

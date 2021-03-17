@@ -39,7 +39,7 @@ defmodule Nicene.FileAndModuleName do
 
   defp issue_for(issue_meta, line_no, module_name, expected_file) do
     format_issue(issue_meta,
-      message: "#{module_name} is not definied in the correct file - should be #{expected_file}",
+      message: "#{module_name} is not defined in the correct file - should be #{expected_file}",
       line_no: line_no,
       trigger: module_name
     )

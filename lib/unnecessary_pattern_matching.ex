@@ -16,8 +16,8 @@ defmodule Nicene.UnnecessaryPatternMatching do
 
     single_definitions =
       source_file
-      |> Credo.Code.prewalk(&Traverse.get_funs/2)
-      |> Enum.map(fn {_, name, arity, _} -> {name, arity} end)
+      |> Traverse.get_funs()
+      |> Enum.map(fn {_, _, name, arity, _} -> {name, arity} end)
       |> Enum.reduce(%{}, fn fun, acc -> Map.update(acc, fun, 1, &(&1 + 1)) end)
       |> Enum.filter(fn {{_, arity}, count} -> count == 1 and arity != 0 end)
       |> Enum.map(&elem(&1, 0))

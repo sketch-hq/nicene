@@ -94,6 +94,39 @@ defmodule Nicene.PublicFunctionsFirstTest do
     |> assert_issues([])
   end
 
+  test "multiple modules have functions considered inedpendently" do
+    """
+    defmodule NiceneReport do
+      @moduledoc false
+
+      alias NiceneReport.Result
+
+      def hello do
+        result()
+      end
+
+      defp result do
+        Result.world()
+      end
+
+      defmodule Result do
+        @moduledoc false
+
+        def world do
+          world_atom()
+        end
+
+        defp world_atom do
+          :world
+        end
+      end
+    end
+    """
+    |> SourceFile.parse("lib/app/file.ex")
+    |> PublicFunctionsFirst.run([])
+    |> assert_issues([])
+  end
+
   defp assert_issues(issues, expected) do
     assert_lists_equal(issues, expected, fn issue, expected ->
       assert_structs_equal(issue, expected, [:category, :check, :filename, :line_no, :message])

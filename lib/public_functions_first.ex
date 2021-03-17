@@ -10,23 +10,34 @@ defmodule Nicene.PublicFunctionsFirst do
 
   @doc false
   def run(source_file, params \\ []) do
-    case Credo.Code.prewalk(source_file, &Traverse.get_funs/2) do
+    issue_meta = IssueMeta.for(source_file, params)
+
+    source_file
+    |> Traverse.get_funs()
+    |> Enum.group_by(
+      fn {_type, module, _function, _arity, _line_no} -> module end,
+      fn {type, _module, _function, _arity, line_no} -> {type, line_no} end
+    )
+    |> Map.values()
+    |> Enum.reduce([], &check_funs(&1, &2, issue_meta))
+  end
+
+  defp check_funs(functions, acc, issue_meta) do
+    case functions do
       [] ->
-        []
+        acc
 
       functions ->
-        issue_meta = IssueMeta.for(source_file, params)
-
         functions
         |> Enum.max_by(fn
-          {:def, _, _, line_no} -> line_no
+          {:def, line_no} -> line_no
           _ -> 0
         end)
         |> case do
-          {:defp, _, _, _} ->
+          {:defp, _} ->
             []
 
-          {_, _, _, last_public_function} ->
+          {_, last_public_function} ->
             Enum.reduce(
               functions,
               [],
@@ -36,7 +47,7 @@ defmodule Nicene.PublicFunctionsFirst do
     end
   end
 
-  defp check_function({:defp, _, _, line}, issues, issue_meta, public_line)
+  defp check_function({:defp, line}, issues, issue_meta, public_line)
        when line < public_line do
     [issue_for(issue_meta, line) | issues]
   end

@@ -15,7 +15,7 @@ defmodule Nicene.AvoidImportsFromCurrentApplication do
 
     namespaces =
       params
-      |> Params.get(:namespaces, [])
+      |> Params.get(:namespaces, __MODULE__)
       |> Enum.flat_map(&Module.split/1)
 
     source_file

@@ -7,17 +7,20 @@ defmodule Nicene.AvoidForbiddenNamespaces do
 
   @explanation [check: @moduledoc]
 
-  use Credo.Check, base_priority: :high, category: :refactoring
+  use Credo.Check,
+    base_priority: :high,
+    category: :refactoring,
+    param_defaults: [from: nil, forbid: nil]
 
   @doc false
   def run(source_file, params \\ []) do
     issue_meta = IssueMeta.for(source_file, params)
 
-    from_namespace = params |> Keyword.fetch!(:from) |> get_namespace()
+    from_namespace = params |> Params.get(:from, __MODULE__) |> get_namespace()
 
     forbidden_namespaces =
       params
-      |> Keyword.fetch!(:forbid)
+      |> Params.get(:forbid, __MODULE__)
       |> Enum.map(&get_namespace/1)
 
     source_file
@@ -43,8 +46,7 @@ defmodule Nicene.AvoidForbiddenNamespaces do
        ) do
     if used_namespace in forbidden_namespaces do
       {ast,
-       {[issue_for(issue_meta, Keyword.get(meta, :line), used_namespace) | issues],
-        namespace}}
+       {[issue_for(issue_meta, Keyword.get(meta, :line), used_namespace) | issues], namespace}}
     else
       {ast, {issues, namespace}}
     end

@@ -18,23 +18,8 @@ end
 
 ## Usage
 
-Add Nicene as a Credo plugin with the following line to your `.credo.exs`
-file:
-
-```elixir
-%{
-  configs: [
-    %{
-      name: "default",
-      plugins: [{Nicene, []}]
-    }
-  ]
-}
-```
-
-If you want to customize any checks in Nicene, you can do that as you would
-with the default Credo checks. Checks in Nicene do not take any parameters
-other than the default ones offered by all Credo checks.
+Nicene defines `Credo.Check`s that you can add to your `.credo.exs`, for
+example:
 
 ```elixir
 %{
@@ -42,17 +27,14 @@ other than the default ones offered by all Credo checks.
     %{
       name: "default",
       checks: [
-        {Nicene.FileAndModuleName, [exit_status: 0]},
-        {Nicene.UnnecessaryPatternMatching, [exit_status: 0]},
-        {Nicene.FileTopToBottom, [exit_status: 0]},
-        {Nicene.PublicFunctionsFirst, [exit_status: 0]},
-        {Nicene.ConsistentFunctionDefinitions, [exit_status: 0]},
-        {Nicene.TrueFalseCaseStatements, [exit_status: 0]},
-        {Nicene.TestsInTestFolder, [exit_status: 0]},
-        {Nicene.NoSpecsPrivateFunctions, [exit_status: 0]}
+        {Nicene.FileAndModuleName, []},
+        {Nicene.UnnecessaryPatternMatching, []},
+        {Nicene.FileTopToBottom, []},
       ]
     }
   ]
 }
 ```
 
+See the documentation on [hex](https://hexdocs.pm/nicene) for the list of
+supported checks and their configuration.

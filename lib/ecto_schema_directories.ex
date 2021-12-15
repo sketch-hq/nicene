@@ -10,28 +10,31 @@ defmodule Nicene.EctoSchemaDirectories do
 
   @doc false
   def run(source_file, params \\ []) do
-    run(source_file, params, other_files(source_file.filename))
-  end
+    is_schema? = Credo.Code.prewalk(source_file, &schema?/2, false)
 
-  def run(source_file, params, other_files) do
-    issue_meta = IssueMeta.for(source_file, params)
-    is_schema = Credo.Code.prewalk(source_file, &schema?/2, false)
-
-    if is_schema and not Enum.all?(other_files, &schema?/1) do
-      [issue_for(issue_meta, source_file.filename)]
+    if is_schema? do
+      sibling_contents = get_sibling_file_contents(source_file.filename)
+      ensure_all_siblings_are_schema(source_file, sibling_contents, params)
     else
       []
     end
   end
 
-  defp other_files(filename) do
-    "#{Path.dirname(filename)}/*.ex"
-    |> Path.wildcard()
-    |> read_files()
+  # exported for testing purposes only
+  @doc false
+  def ensure_all_siblings_are_schema(source_file, sibling_contents, params) do
+    if Enum.all?(sibling_contents, &schema?/1) do
+      []
+    else
+      issue_meta = IssueMeta.for(source_file, params)
+      [issue_for(issue_meta, source_file.filename)]
+    end
   end
 
-  defp read_files(files) do
-    Enum.reduce(files, [], fn file, acc ->
+  defp get_sibling_file_contents(filename) do
+    "#{Path.dirname(filename)}/*.ex"
+    |> Path.wildcard()
+    |> Enum.reduce([], fn file, acc ->
       case File.read(file) do
         {:ok, binary} ->
           [binary | acc]

@@ -78,4 +78,3 @@ defmodule Nicene.EnsureTestFilePatternTest do
     end)
   end
 end
-

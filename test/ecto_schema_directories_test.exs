@@ -6,7 +6,7 @@ defmodule Nicene.EctoSchemaDirectoriesTest do
   alias Nicene.EctoSchemaDirectories
 
   test "warns if there are non-schemas in the same directory as schemas" do
-    other_files = [
+    sibling_contents = [
       """
       defmodule My.Admin do
         use Ecto.Schema
@@ -38,7 +38,7 @@ defmodule Nicene.EctoSchemaDirectoriesTest do
     end
     """
     |> SourceFile.parse("lib/my/user.ex")
-    |> EctoSchemaDirectories.run([], other_files)
+    |> EctoSchemaDirectories.ensure_all_siblings_are_schema(sibling_contents, [])
     |> assert_issues([
       %Issue{
         category: :refactoring,
@@ -50,7 +50,7 @@ defmodule Nicene.EctoSchemaDirectoriesTest do
   end
 
   test "does not warn if there are only Ecto schemas in the directory" do
-    other_files = [
+    sibling_contents = [
       """
       defmodule My.Admin do
         use Ecto.Schema
@@ -81,7 +81,7 @@ defmodule Nicene.EctoSchemaDirectoriesTest do
     end
     """
     |> SourceFile.parse("lib/my/user.ex")
-    |> EctoSchemaDirectories.run([], other_files)
+    |> EctoSchemaDirectories.ensure_all_siblings_are_schema(sibling_contents, [])
     |> assert_issues([])
   end
 

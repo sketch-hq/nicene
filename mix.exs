@@ -35,7 +35,7 @@ defmodule Nicene.MixProject do
         "README.md",
         "LICENSE"
       ],
-      maintainers: ["Devon Estes"],
+      maintainers: ["Sketch"],
       licenses: ["MIT"],
       links: %{
         "GitHub" => @github_url
@@ -50,7 +50,7 @@ defmodule Nicene.MixProject do
     [
       {:assertions, "~> 0.17.0", only: [:test]},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
-      {:credo, "~> 1.2.0"}
+      {:credo, "~> 1.6"}
     ]
   end
 end

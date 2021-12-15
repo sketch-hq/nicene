@@ -7,7 +7,7 @@ defmodule Nicene.AvoidImportsFromCurrentApplication do
 
   @explanation [check: @moduledoc]
 
-  use Credo.Check, base_priority: :high, category: :refactoring
+  use Credo.Check, base_priority: :high, category: :refactoring, param_defaults: [namespaces: []]
 
   @doc false
   def run(source_file, params \\ []) do
@@ -15,7 +15,7 @@ defmodule Nicene.AvoidImportsFromCurrentApplication do
 
     namespaces =
       params
-      |> Keyword.get(:namespaces, [])
+      |> Params.get(:namespaces, [])
       |> Enum.flat_map(&Module.split/1)
 
     source_file

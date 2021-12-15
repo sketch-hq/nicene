@@ -1,17 +1,9 @@
 defmodule Nicene do
-  @moduledoc """
-  A Credo plugin which offers several additional checks.
+  @moduledoc false
+
+  @deprecated """
+  Using Nicene as a plugin is deprecated as of 0.6.0. List the checks you would
+  like to use explicitly in your .credo.exs"
   """
-
-  alias Credo.Plugin
-
-  def init(exec) do
-    config_file =
-      :nicene
-      |> :code.priv_dir()
-      |> Path.join(".credo.exs")
-      |> File.read!()
-
-    Plugin.register_default_config(exec, config_file)
-  end
+  def init(exec), do: exec
 end

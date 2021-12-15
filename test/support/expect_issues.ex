@@ -1,4 +1,7 @@
 defmodule Nicene.ExpectIssues do
+  @moduledoc """
+  Custom assertions for testing `Credo.Check`s
+  """
   require Assertions
 
   import ExUnit.Assertions, only: [assert: 1]
@@ -7,7 +10,7 @@ defmodule Nicene.ExpectIssues do
   def assert_expected_issues(source_file, checker, expected_count) do
     expected_issues =
       [source_file]
-      |> Credo.Check.ConfigCommentFinder.run(nil, [])
+      |> Credo.Check.ConfigCommentFinder.run()
       |> Enum.flat_map(fn {filename, comments} ->
         comments
         |> Enum.map(fn comment ->
@@ -53,6 +56,7 @@ defmodule Nicene.ExpectIssues do
       if expected.message do
         assert Regex.match?(expected.message, issue.message)
       end
+
       assert_structs_equal(issue, expected, [:category, :check, :filename, :line_no])
     end)
   end

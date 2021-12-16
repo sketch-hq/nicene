@@ -29,7 +29,6 @@ defmodule Nicene.MixProject do
   defp package() do
     [
       files: [
-        "priv",
         "lib",
         "mix.exs",
         "README.md",

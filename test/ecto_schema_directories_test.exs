@@ -85,6 +85,42 @@ defmodule Nicene.EctoSchemaDirectoriesTest do
     |> assert_issues([])
   end
 
+  test "does not warn if there are embed Ecto schemas in the directory" do
+    sibling_contents = [
+      """
+      defmodule My.Admin do
+        use Ecto.Schema
+
+        embedded_schema do
+          field(:name, :string)
+        end
+      end
+      """,
+      """
+      defmodule My.Member do
+        use Ecto.Schema
+
+        schema "members" do
+          field(:name, :string)
+        end
+      end
+      """
+    ]
+
+    """
+    defmodule My.User do
+      use Ecto.Schema
+
+      schema "users" do
+        field(:name, :string)
+      end
+    end
+    """
+    |> SourceFile.parse("lib/my/user.ex")
+    |> EctoSchemaDirectories.ensure_all_siblings_are_schema(sibling_contents, [])
+    |> assert_issues([])
+  end
+
   defp assert_issues(issues, expected) do
     assert_lists_equal(issues, expected, fn issue, expected ->
       assert_structs_equal(issue, expected, [:category, :check, :filename, :line_no, :message])

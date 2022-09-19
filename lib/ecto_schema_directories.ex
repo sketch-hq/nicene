@@ -56,6 +56,10 @@ defmodule Nicene.EctoSchemaDirectories do
     {ast, true}
   end
 
+  defp schema?({:embedded_schema, _, _} = ast, _) do
+    {ast, true}
+  end
+
   defp schema?(ast, acc) do
     {ast, acc}
   end

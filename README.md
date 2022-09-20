@@ -11,7 +11,7 @@ Add `nicene` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:nicene, "~> 0.6.0"}
+    {:nicene, "~> 0.7.0"}
   ]
 end
 ```
